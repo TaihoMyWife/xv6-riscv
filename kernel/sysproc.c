@@ -5,6 +5,7 @@
 #include "memlayout.h"
 #include "spinlock.h"
 #include "proc.h"
+#include "inttypes.h"
 //extern int syscall_count;
 uint64
 sys_exit(void)
@@ -32,6 +33,7 @@ sys_wait(void)
 {
   uint64 p;
   argaddr(0, &p);
+  //printf("uint64: %" PRIu64 "\n", p);
   return wait(p);
 }
 
@@ -95,6 +97,21 @@ sys_info(void)
 {
   int n;
   argint(0, &n); //get syscall arg
-  print_test(n);
+  return print_test(n);
+  //return ;
+}
+uint64
+sys_procinfo(void)
+{
+  //struct pinfo *n;
+  uint64 p;
+  argaddr(0, &p);
+  //printf("uint64: %" PRIu64 "\n", p);
+  //n = (struct pinfo*)p;
+  //printf("[procinfo %d] ppid: %d, syscalls: %d, page usage: %d\n",
+  //                      52, n->ppid, n->syscall_count, n->page_usage);
+  //argaddr(0, &n); //get syscall arg
+  //n = addr;
+  proc_info(p);
   return 0;
 }

@@ -5,7 +5,7 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "defs.h"
-
+#include "inttypes.h"
 struct cpu cpus[NCPU];
 
 struct proc proc[NPROC];
@@ -128,6 +128,7 @@ allocproc(void)
 
 found:
   p->pid = allocpid();
+  p->syscall_count=0;
   p->state = USED;
 
   // Allocate a trapframe page.
@@ -184,7 +185,7 @@ proc_pagetable(struct proc *p)
   pagetable_t pagetable;
 
   // An empty page table.
-  pagetable = uvmcreate();
+  pagetable = uvmcreate(); //apply for a new page
   if(pagetable == 0)
     return 0;
 
@@ -720,3 +721,16 @@ int print_test(int n)
   //}
 
 }
+int proc_info(uint64 addr){
+	struct proc *p = myproc();
+        struct pinfo pf;
+	//printf("uint64 FUNC: %" PRIu64 "\n", addr);
+	pf.ppid = p->pid;	
+	pf.syscall_count = p->syscall_count;
+	pf.page_usage = p->sz/PGSIZE;
+	if(copyout(p->pagetable, addr, (char *)&pf, sizeof(pf)) < 0)
+        	return -1;
+	return 0;
+}
+
+	

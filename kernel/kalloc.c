@@ -77,6 +77,7 @@ kalloc(void)
   release(&kmem.lock);
 
   if(r)
-    memset((char*)r, 5, PGSIZE); // fill with junk
+    memset((char*)r, 5, PGSIZE); // fill with junk, 
+				 // this is a brand new page which newly allocated from mem
   return (void*)r;
 }

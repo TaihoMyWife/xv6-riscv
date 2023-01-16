@@ -11,13 +11,18 @@ struct cpu cpus[NCPU];
 struct proc proc[NPROC];
 
 struct proc *initproc;
-
+struct run {
+  struct run *next;
+};
 int nextpid = 1;
 struct spinlock pid_lock;
-
+extern struct {
+  struct spinlock lock;
+  struct run *freelist;
+} kmem;
 extern void forkret(void);
 static void freeproc(struct proc *p);
-
+extern int syscall_count;
 extern char trampoline[]; // trampoline.S
 
 // helps ensure that wakeups of wait()ing
@@ -680,4 +685,38 @@ procdump(void)
     printf("%d %s %s", p->pid, state, p->name);
     printf("\n");
   }
+}
+
+int print_test(int n)
+{
+  struct proc *p; int k=64;
+  if(n==0){
+    for(p = proc; p < &proc[NPROC]; p++) {
+      if(p->state == UNUSED) {
+        k--;
+      }
+    }
+  printf("current processes: %d\n", k);
+  return k;
+  }
+  if(n==1){
+	  printf("current syscalls: %d\n", syscall_count);
+	  return syscall_count;
+  }
+  if(n==2){
+	  int sum =0;
+	  struct run *r;
+          r = kmem.freelist;
+          while(r){
+          	r = r->next;
+		sum++;
+	  }
+	  printf("current free mempage: %d\n", sum);
+	  return sum;
+  }
+  return -1;
+ // if(n==1){
+
+  //}
+
 }

@@ -5,7 +5,7 @@
 #include "memlayout.h"
 #include "spinlock.h"
 #include "proc.h"
-
+//extern int syscall_count;
 uint64
 sys_exit(void)
 {
@@ -88,4 +88,13 @@ sys_uptime(void)
   xticks = ticks;
   release(&tickslock);
   return xticks;
+}
+
+uint64
+sys_info(void)
+{
+  int n;
+  argint(0, &n); //get syscall arg
+  print_test(n);
+  return 0;
 }

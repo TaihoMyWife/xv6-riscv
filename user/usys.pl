@@ -38,3 +38,4 @@ entry("sleep");
 entry("uptime");
 entry("info");
 entry("procinfo");
+entry("sched_static");

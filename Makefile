@@ -134,6 +134,7 @@ UPROGS=\
 	$U/_zombie\
 	$U/_test\
 	$U/_lab1_test\
+	$U/_test2\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)

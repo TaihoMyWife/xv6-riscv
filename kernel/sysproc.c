@@ -15,6 +15,11 @@ sys_exit(void)
   exit(n);
   return 0;  // not reached
 }
+uint64
+sys_sched_static(void)
+{
+  return sched_statistics();
+}
 
 uint64
 sys_getpid(void)
@@ -59,6 +64,7 @@ sys_sleep(void)
   argint(0, &n);
   acquire(&tickslock);
   ticks0 = ticks;
+  //printf("ticks0:%u \n", ticks0);
   while(ticks - ticks0 < n){
     if(killed(myproc())){
       release(&tickslock);

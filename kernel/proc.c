@@ -732,5 +732,34 @@ int proc_info(uint64 addr){
         	return -1;
 	return 0;
 }
-
+int sched_statistics(void)
+{
+  struct proc *p;
+  struct cpu *c = mycpu();
+  c->proc = 0;
+    // Avoid deadlock by ensuring that devices can interrupt.
+    for(p = proc; p < &proc[NPROC]; p++) {
+      printf("%d(%s): tickets: xxx, ticks:%d \n", p->pid, p->name,p->chan);
+      //acquire(&p->lock);
+     /* if(p->state != UNUSED){
+	//uint k=ticks++;
+        printf("%d(%s): tickets: xxx, ticks: \n", p->pid, p->name);
+      }*/
+/*
+      if(p->state == RUNNABLE) {
+        // Switch to chosen process.  It is the process's job
+        // to release its lock and then reacquire it
+        // before jumping back to us.
+        p->state = RUNNING;
+        c->proc = p;
+        swtch(&c->context, &p->context);
+        // Process is done running for now.
+        // It should have changed its p->state before coming back.
+        c->proc = 0;
+      } */
+      //release(&p->lock);
+    }
+    printf("syscall over");
+return 0;
+}
 	

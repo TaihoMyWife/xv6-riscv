@@ -36,7 +36,7 @@ int main(int argc, char *argv[]){
 		ret = fork();
 		if (ret == 0) { // child process
 			struct pinfo param;
-			printf("intput uint64: %" PRIu64 "\n", &param);
+			//printf("intput uint64: %" PRIu64 "\n", &param);
 			malloc(mem); // this triggers a syscall
 			for (int j = 0; j < 10; j++)
 				procinfo(&param); // calls 10 times

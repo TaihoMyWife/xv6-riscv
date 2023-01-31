@@ -128,7 +128,7 @@ allocproc(void)
 
 found:
   p->pid = allocpid();
-  p->syscall_count=0;
+  p->syscall_count = 0;
   p->state = USED;
 
   // Allocate a trapframe page.
@@ -174,6 +174,7 @@ freeproc(struct proc *p)
   p->chan = 0;
   p->killed = 0;
   p->xstate = 0;
+  p->syscall_count = 0;
   p->state = UNUSED;
 }
 
@@ -697,12 +698,12 @@ int print_test(int n)
         k--;
       }
     }
-  printf("current processes: %d\n", k);
+  //printf("current processes: %d\n", k);
   return k;
   }
   if(n==1){
-	  printf("current syscalls: %d\n", syscall_count);
-	  return syscall_count;
+	  //printf("current syscalls: %d\n", syscall_count);
+	  return syscall_count-1;
   }
   if(n==2){
 	  int sum =0;
@@ -712,7 +713,7 @@ int print_test(int n)
           	r = r->next;
 		sum++;
 	  }
-	  printf("current free mempage: %d\n", sum);
+	  //printf("current free mempage: %d\n", sum);
 	  return sum;
   }
   return -1;
@@ -725,9 +726,9 @@ int proc_info(uint64 addr){
 	struct proc *p = myproc();
         struct pinfo pf;
 	//printf("uint64 FUNC: %" PRIu64 "\n", addr);
-	pf.ppid = p->pid;	
-	pf.syscall_count = p->syscall_count;
-	pf.page_usage = p->sz/PGSIZE;
+	pf.ppid = p->parent->pid;	
+	pf.syscall_count = p->syscall_count-1;
+	pf.page_usage = (p->sz+PGSIZE-1)/PGSIZE;
 	if(copyout(p->pagetable, addr, (char *)&pf, sizeof(pf)) < 0)
         	return -1;
 	return 0;

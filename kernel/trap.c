@@ -8,7 +8,7 @@
 
 struct spinlock tickslock;
 uint ticks;
-int syscall_count =0;
+//int syscall_count =0;
 extern char trampoline[], uservec[], userret[];
 
 // in kernelvec.S, calls kerneltrap().
@@ -65,7 +65,7 @@ usertrap(void)
     intr_on();
     //printf("sb123\n");
     syscall();
-    syscall_count++;
+    //syscall_count++;
   } else if((which_dev = devintr()) != 0){
     // ok
   } else {

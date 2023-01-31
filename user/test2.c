@@ -12,5 +12,6 @@ main(int argc, char *argv[])
   //test(2);
   //char *shihao = malloc();
   //info(2);
-  exit(0);
+  printf("testover");
+  return 0;
 }

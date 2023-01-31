@@ -6,7 +6,6 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "inttypes.h"
-//extern int syscall_count;
 uint64
 sys_exit(void)
 {
@@ -18,7 +17,9 @@ sys_exit(void)
 uint64
 sys_sched_static(void)
 {
-  return sched_statistics();
+  sched_statistics();
+  printf("function over");
+  return 0;
 }
 
 uint64
@@ -109,10 +110,8 @@ sys_info(void)
 uint64
 sys_procinfo(void)
 {
-  //struct pinfo *n;
   uint64 p;
   argaddr(0, &p);
-  //printf("uint64: %" PRIu64 "\n", p);
   //n = (struct pinfo*)p;
   //printf("[procinfo %d] ppid: %d, syscalls: %d, page usage: %d\n",
   //                      52, n->ppid, n->syscall_count, n->page_usage);

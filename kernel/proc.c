@@ -6,6 +6,7 @@
 #include "proc.h"
 #include "defs.h"
 #include "inttypes.h"
+#include "random.h"
 struct cpu cpus[NCPU];
 
 struct proc proc[NPROC];
@@ -30,7 +31,7 @@ extern char trampoline[]; // trampoline.S
 // memory model when using p->parent.
 // must be acquired before any p->lock.
 struct spinlock wait_lock;
-
+int random_at_most(int max);
 // Allocate a page for each process's kernel stack.
 // Map it high in memory, followed by an invalid
 // guard page.
@@ -174,6 +175,7 @@ freeproc(struct proc *p)
   p->chan = 0;
   p->killed = 0;
   p->xstate = 0;
+  p->syscall_count = 0;
   p->state = UNUSED;
 }
 
@@ -247,6 +249,7 @@ userinit(void)
   // and data into it.
   uvmfirst(p->pagetable, initcode, sizeof(initcode));
   p->sz = PGSIZE;
+  p->syscall_count = 0;
 
   // prepare for the very first "return" from kernel to user.
   p->trapframe->epc = 0;      // user program counter
@@ -326,6 +329,7 @@ fork(void)
 
   acquire(&np->lock);
   np->state = RUNNABLE;
+  np->tickets = 10;
   release(&np->lock);
 
   return pid;
@@ -452,29 +456,92 @@ scheduler(void)
 {
   struct proc *p;
   struct cpu *c = mycpu();
-  
   c->proc = 0;
+  static _Bool have_seeded = 0;
+  const int seed = 1323;
+	if(!have_seeded)
+	{
+		srand(seed);
+		have_seeded = 1;
+	}
+
   for(;;){
     // Avoid deadlock by ensuring that devices can interrupt.
     intr_on();
-
+    int total_tickets = 0;
+    int currentTicketCount = 0;
+    int lottery = 0;
+    lottery = rand()%total_tickets;;
     for(p = proc; p < &proc[NPROC]; p++) {
       acquire(&p->lock);
       if(p->state == RUNNABLE) {
-        // Switch to chosen process.  It is the process's job
-        // to release its lock and then reacquire it
-        // before jumping back to us.
-        p->state = RUNNING;
-        c->proc = p;
-        swtch(&c->context, &p->context);
-
-        // Process is done running for now.
-        // It should have changed its p->state before coming back.
-        c->proc = 0;
+        // get all runable process to get total ticktets 
+        // to release its lock and then reacquire it.
+	total_tickets += p->tickets;
+      if(total_tickets>=lottery){
+	  //printf("the result of lottery is %d",lottery);
+	  p->state = RUNNING;
+          c->proc = p;
+          currentTicketCount++;
+          swtch(&c->context, &p->context);
+          // Process is done running for now.
+          // It should have changed its p->state before coming back.
+          c->proc = 0;
+        }
       }
       release(&p->lock);
+
+      //release(&p->lock);
     }
+    /*
+    lottery = random_at_most(total_tickets);
+    //printf("the result of lottery is %d",lottery); 
+    for(p = proc; p < &proc[NPROC]; p++) {
+        acquire(&p->lock);
+	if(p->state == RUNNABLE && p->tickets == lottery) {
+          p->state = RUNNING;
+          c->proc = p;
+	  currentTicketCount++;
+          swtch(&c->context, &p->context);
+          // Process is done running for now.
+          // It should have changed its p->state before coming back.
+          c->proc = 0;
+	}
+      release(&p->lock);
+    }
+    */
   }
+}
+int
+random_at_most(int max) {
+
+  if(max <= 0) {
+    return 1;
+  }
+
+  static int z1 = 12345; // 12345 for rest of zx
+  static int z2 = 12345; // 12345 for rest of zx
+  static int z3 = 12345; // 12345 for rest of zx
+  static int z4 = 12345; // 12345 for rest of zx
+
+  int b;
+  b = (((z1 << 6) ^ z1) >> 13);
+  z1 = (((z1 & 4294967294) << 18) ^ b);
+  b = (((z2 << 2) ^ z2) >> 27);
+  z2 = (((z2 & 4294967288) << 2) ^ b);
+  b = (((z3 << 13) ^ z3) >> 21);
+  z3 = (((z3 & 4294967280) << 7) ^ b);
+  b = (((z4 << 3) ^ z4) >> 12);
+  z4 = (((z4 & 4294967168) << 13) ^ b);
+
+  // if we have an argument, then we can use it
+  int rand = ((z1 ^ z2 ^ z3 ^ z4)) % max;
+
+  if(rand < 0) {
+    rand = rand * -1;
+  }
+
+  return rand;
 }
 
 // Switch to scheduler.  Must hold only p->lock
@@ -697,11 +764,11 @@ int print_test(int n)
         k--;
       }
     }
-  printf("current processes: %d\n", k);
+  //printf("current processes: %d\n", k);
   return k;
   }
   if(n==1){
-	  printf("current syscalls: %d\n", syscall_count);
+	  //printf("current syscalls: %d\n", syscall_count);
 	  return syscall_count;
   }
   if(n==2){
@@ -712,7 +779,7 @@ int print_test(int n)
           	r = r->next;
 		sum++;
 	  }
-	  printf("current free mempage: %d\n", sum);
+	  //printf("current free mempage: %d\n", sum);
 	  return sum;
   }
   return -1;
@@ -725,9 +792,10 @@ int proc_info(uint64 addr){
 	struct proc *p = myproc();
         struct pinfo pf;
 	//printf("uint64 FUNC: %" PRIu64 "\n", addr);
-	pf.ppid = p->pid;	
+	pf.ppid = p->parent->pid;	
 	pf.syscall_count = p->syscall_count;
-	pf.page_usage = p->sz/PGSIZE;
+	printf("current  mempage size: %d\n", p->sz);
+	pf.page_usage = (p->sz+PGSIZE-1)/PGSIZE;
 	if(copyout(p->pagetable, addr, (char *)&pf, sizeof(pf)) < 0)
         	return -1;
 	return 0;

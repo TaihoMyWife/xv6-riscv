@@ -131,6 +131,7 @@ found:
   p->pid = allocpid();
   p->syscall_count=0;
   p->state = USED;
+  p->tickets = 10;
 
   // Allocate a trapframe page.
   if((p->trapframe = (struct trapframe *)kalloc()) == 0){
@@ -512,37 +513,6 @@ scheduler(void)
     */
   }
 }
-int
-random_at_most(int max) {
-
-  if(max <= 0) {
-    return 1;
-  }
-
-  static int z1 = 12345; // 12345 for rest of zx
-  static int z2 = 12345; // 12345 for rest of zx
-  static int z3 = 12345; // 12345 for rest of zx
-  static int z4 = 12345; // 12345 for rest of zx
-
-  int b;
-  b = (((z1 << 6) ^ z1) >> 13);
-  z1 = (((z1 & 4294967294) << 18) ^ b);
-  b = (((z2 << 2) ^ z2) >> 27);
-  z2 = (((z2 & 4294967288) << 2) ^ b);
-  b = (((z3 << 13) ^ z3) >> 21);
-  z3 = (((z3 & 4294967280) << 7) ^ b);
-  b = (((z4 << 3) ^ z4) >> 12);
-  z4 = (((z4 & 4294967168) << 13) ^ b);
-
-  // if we have an argument, then we can use it
-  int rand = ((z1 ^ z2 ^ z3 ^ z4)) % max;
-
-  if(rand < 0) {
-    rand = rand * -1;
-  }
-
-  return rand;
-}
 
 // Switch to scheduler.  Must hold only p->lock
 // and have changed proc->state. Saves and restores
@@ -764,11 +734,15 @@ int print_test(int n)
         k--;
       }
     }
-  //printf("current processes: %d\n", k);
+#ifdef DEBUG
+  printf("current processes: %d\n", k);
+#endif
   return k;
   }
   if(n==1){
-	  //printf("current syscalls: %d\n", syscall_count);
+#ifdef DEBUG
+	  printf("current syscalls: %d\n", syscall_count);
+#endif
 	  return syscall_count;
   }
   if(n==2){
@@ -779,14 +753,12 @@ int print_test(int n)
           	r = r->next;
 		sum++;
 	  }
-	  //printf("current free mempage: %d\n", sum);
+#ifdef DEBUG
+	  printf("current free mempage: %d\n", sum);
+#endif
 	  return sum;
   }
   return -1;
- // if(n==1){
-
-  //}
-
 }
 int proc_info(uint64 addr){
 	struct proc *p = myproc();
@@ -794,7 +766,13 @@ int proc_info(uint64 addr){
 	//printf("uint64 FUNC: %" PRIu64 "\n", addr);
 	pf.ppid = p->parent->pid;	
 	pf.syscall_count = p->syscall_count;
-	printf("current  mempage size: %d\n", p->sz);
+#if defined(LOTTERY)
+	printf("current syscalllottry  mempage size: %d\n", p->sz);
+#endif
+
+#ifdef DEBUG
+	printf("current syscall 123  mempage size: %d\n", p->sz);
+#endif
 	pf.page_usage = (p->sz+PGSIZE-1)/PGSIZE;
 	if(copyout(p->pagetable, addr, (char *)&pf, sizeof(pf)) < 0)
         	return -1;
@@ -803,31 +781,36 @@ int proc_info(uint64 addr){
 int sched_statistics(void)
 {
   struct proc *p;
-  struct cpu *c = mycpu();
-  c->proc = 0;
+ // struct cpu *c = mycpu();
+ // c->proc = 0;
     // Avoid deadlock by ensuring that devices can interrupt.
+    
     for(p = proc; p < &proc[NPROC]; p++) {
-      printf("%d(%s): tickets: xxx, ticks:%d \n", p->pid, p->name,p->chan);
+      if(p->state!=UNUSED) {
+	 //acquire(&p->lock);
+         printf("%d(%s): tickets: %d, ticks:%d \n", p->pid, p->name,p->tickets,p->chan);
+	 //release(&p->lock);
+      }
+      
       //acquire(&p->lock);
      /* if(p->state != UNUSED){
 	//uint k=ticks++;
         printf("%d(%s): tickets: xxx, ticks: \n", p->pid, p->name);
       }*/
-/*
-      if(p->state == RUNNABLE) {
-        // Switch to chosen process.  It is the process's job
-        // to release its lock and then reacquire it
-        // before jumping back to us.
-        p->state = RUNNING;
-        c->proc = p;
-        swtch(&c->context, &p->context);
-        // Process is done running for now.
-        // It should have changed its p->state before coming back.
-        c->proc = 0;
-      } */
-      //release(&p->lock);
     }
+#ifdef DEBUG
     printf("syscall over");
-return 0;
+#endif
+  return 0;
 }
-	
+int sched_tickets(int tickets)
+{
+  struct proc *p = myproc();
+  acquire(&p->lock);
+  p->tickets = tickets;
+  release(&p->lock);
+#ifndef DEBUG
+  printf("tickets changed to : xxx, ticks: \n", p->pid, p->name);
+#endif
+  return 0;
+}	

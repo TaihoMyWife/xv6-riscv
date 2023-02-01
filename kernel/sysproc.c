@@ -104,6 +104,8 @@ sys_info(void)
 {
   int n;
   argint(0, &n); //get syscall arg
+  //sched_statistics();
+  //return 0;
   return print_test(n);
   //return ;
 }

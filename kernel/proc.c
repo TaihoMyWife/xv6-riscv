@@ -345,8 +345,10 @@ fork(void)
   np->ticks = 0;
   #endif
   #if defined(STRIDE)
-  np->tickets = 10;
-  np->
+  np->tickets = 10000;
+  np->stride = 10000/10000;
+  np->pass = p->pass;
+  np->ticks = 0;
   #endif
   release(&np->lock);
 
@@ -487,7 +489,7 @@ scheduler(void)
   for(;;){
     // Avoid deadlock by ensuring that devices can interrupt.
     intr_on();
-    #if defined(LOTTERY)
+ #if defined(LOTTERY)
     int total_tickets = 0;
     int currentTicketCount = 0;
     int lottery = 0;
@@ -508,7 +510,7 @@ scheduler(void)
         // to release its lock and then reacquire it.
 	total_tickets += p->tickets;
       if(total_tickets>=lottery){
-	  printf("the result of lottery pid is %d p tickets is %d\n",p->pid,p->tickets);
+	  //printf("the result of lottery pid is %d p tickets is %d\n",p->pid,p->tickets);
 	  p->state = RUNNING;
 	  p->ticks++;
           c->proc = p;
@@ -523,7 +525,37 @@ scheduler(void)
       }
       release(&p->lock);
     }
-    #endif
+#endif
+#if defined(STRIDE)
+    uint min_pass = 999999;
+    int pid = 0;
+    for(p = proc; p < &proc[NPROC]; p++) {
+      if(p->state == RUNNABLE) {
+	  if(p->pass < min_pass){
+	    min_pass=p->pass;
+	    pid=p->pid;
+	  }
+      }
+    }
+    for(p = proc; p < &proc[NPROC]; p++) {
+      acquire(&p->lock);
+      if(p->state == RUNNABLE && p->pid == pid) {
+	  p->state = RUNNING;
+          p->ticks++;
+	  p->pass+=p->stride;
+          c->proc = p;
+          //currentTicketCount++;
+          swtch(&c->context, &p->context);
+          // Process is done running for now.
+          // It should have changed its p->state before coming back.
+          c->proc = 0;
+          release(&p->lock);
+          break;
+        }
+      release(&p->lock);
+      }
+      //release(&p->lock);
+#endif
   }
   
 }
@@ -813,12 +845,39 @@ int sched_statistics(void)
         printf("%d(%s): tickets: xxx, ticks: \n", p->pid, p->name);
       }*/
     }
-#endif
 #ifdef DEBUG
     printf("syscall over");
 #endif
   return 0;
 }
+#endif
+#if defined(STRIDE)
+int sched_statistics(void)
+{
+  struct proc *p;
+ // struct cpu *c = mycpu();
+ // c->proc = 0;
+    // Avoid deadlock by ensuring that devices can interrupt.
+
+    for(p = proc; p < &proc[NPROC]; p++) {
+      if(p->state!=UNUSED) {
+         //acquire(&p->lock);
+         printf("%d(%s): tickets: %d, ticks:%d pass:%d stride:%d\n", p->pid, p->name,p->tickets,p->ticks,p->pass,p->stride);
+         //release(&p->lock);
+      }
+
+      //acquire(&p->lock);
+     /* if(p->state != UNUSED){
+        //uint k=ticks++;
+        printf("%d(%s): tickets: xxx, ticks: \n", p->pid, p->name);
+      }*/
+    }
+#ifdef DEBUG
+    printf("syscall over");
+#endif
+  return 0;
+}
+#endif
 #if defined(LOTTERY)
 int sched_tickets(int tickets)
 {
@@ -835,4 +894,22 @@ int sched_tickets(int tickets)
 #endif
   return 0;
 }	
+#endif
+#if defined(STRIDE)
+int sched_tickets(int tickets)
+{
+  if(tickets < 0|| tickets>10000){
+    printf("invalid tickets");
+    return -1;
+  }
+  struct proc *p = myproc();
+  acquire(&p->lock);
+  p->tickets = tickets;
+  p->stride = 10000/tickets;
+  release(&p->lock);
+#ifdef DEBUG
+  printf("tickets changed to : xxx, ticks: \n", p->pid, p->name);
+#endif
+  return 0;
+}
 #endif

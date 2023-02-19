@@ -15,7 +15,7 @@ sys_exit(void)
   return 0;  // not reached
 }
 //print tickets and ticks
-#if defined(LOTTERY)
+#if defined(LOTTERY)||(STRIDE)
 uint64
 sys_sched_static(void)
 {
@@ -126,7 +126,7 @@ sys_procinfo(void)
   proc_info(p);
   return 0;
 }
-#if defined(LOTTERY)
+#if defined(LOTTERY)||STRIDE
 uint64
 sys_sched_tickets(void)
 {

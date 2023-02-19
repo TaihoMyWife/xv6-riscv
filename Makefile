@@ -70,7 +70,7 @@ CFLAGS += -fno-pie -nopie
 endif
 LAB2 = RR
 CFLAGS += -D$(LAB2)
-DEBUG = LL
+DEBUG = NO
 CFLAGS += -D$(DEBUG)
 #echo $CFLAGS
 LDFLAGS = -z max-page-size=4096
@@ -137,6 +137,7 @@ UPROGS=\
 	$U/_test\
 	$U/_lab1_test\
 	$U/_test2\
+	$U/_lab2\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)

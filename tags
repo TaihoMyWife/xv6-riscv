@@ -20,7 +20,7 @@ CLINT_MTIME	kernel/memlayout.h	31;"	d
 CLINT_MTIMECMP	kernel/memlayout.h	30;"	d
 CONSOLE	kernel/file.h	40;"	d
 CPUS	Makefile	/^CPUS := 3$/;"	m
-DEBUG	Makefile	/^DEBUG = LL$/;"	m
+DEBUG	Makefile	/^DEBUG = NO$/;"	m
 DIRSIZ	kernel/fs.h	54;"	d
 Disassembly	kernel/kernel.asm	/^Disassembly of section .text:$/;"	l
 Disassembly	user/cat.asm	/^Disassembly of section .text:$/;"	l
@@ -3415,7 +3415,7 @@ log	kernel/log.c	/^struct log {$/;"	s	file:
 log_write	kernel/log.c	/^log_write(struct buf *b)$/;"	f
 logheader	kernel/log.c	/^struct logheader {$/;"	s	file:
 logstart	kernel/fs.h	/^  uint logstart;     \/\/ Block number of first log block$/;"	m	struct:superblock
-lottery	kernel/kernel.asm	/^    lottery = rand()%total_tickets;;$/;"	d
+lottery	kernel/kernel.asm	/^    lottery = rand()%total_tickets;$/;"	d
 ls	user/ls.c	/^ls(char *path)$/;"	f
 m	kernel/kernel.asm	/^      m = 1 << (bi % 8);$/;"	d
 m	kernel/kernel.asm	/^    m = min(n - tot, BSIZE - off%BSIZE);$/;"	d
@@ -4402,6 +4402,7 @@ target	kernel/kernel.asm	/^  target = n;$/;"	d
 test	user/usertests.c	/^struct test {$/;"	s	file:
 textwrite	user/usertests.c	/^textwrite(char *s)$/;"	f
 tickets	kernel/proc.h	/^  int tickets;$/;"	m	struct:proc
+ticks	kernel/proc.h	/^  int ticks;$/;"	m	struct:proc
 ticks	kernel/trap.c	/^uint ticks;$/;"	v
 ticks0	kernel/kernel.asm	/^  ticks0 = ticks;$/;"	d
 tickslock	kernel/trap.c	/^struct spinlock tickslock;$/;"	v	typeref:struct:spinlock

@@ -39,3 +39,4 @@ entry("uptime");
 entry("info");
 entry("procinfo");
 entry("sched_static");
+entry("sched_tickets");

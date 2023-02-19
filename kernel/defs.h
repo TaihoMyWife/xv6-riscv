@@ -110,6 +110,7 @@ void            procdump(void);
 int             print_test(int);
 int             proc_info(uint64);
 int             sched_statistics(void);
+int             sched_tickets(int);
 
 // swtch.S
 void            swtch(struct context*, struct context*);

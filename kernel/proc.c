@@ -6,7 +6,7 @@
 #include "proc.h"
 #include "defs.h"
 #include "inttypes.h"
-#include "random.h"
+//#include "random.h"
 struct cpu cpus[NCPU];
 
 struct proc proc[NPROC];
@@ -35,6 +35,13 @@ int random_at_most(int max);
 // Allocate a page for each process's kernel stack.
 // Map it high in memory, followed by an invalid
 // guard page.
+
+unsigned short lfsr = 0xACE1u;
+unsigned short bit;
+unsigned short rand(){
+  bit = ((lfsr >> 0) ^ (lfsr >> 2) ^ (lfsr >> 3) ^ (lfsr >> 5)) & 1;
+  return lfsr = (lfsr >> 1) | (bit << 15);
+}
 void
 proc_mapstacks(pagetable_t kpgtbl)
 {
@@ -132,6 +139,7 @@ found:
   p->syscall_count=0;
   p->state = USED;
   p->tickets = 10;
+  p->ticks = 0;
 
   // Allocate a trapframe page.
   if((p->trapframe = (struct trapframe *)kalloc()) == 0){
@@ -178,6 +186,8 @@ freeproc(struct proc *p)
   p->xstate = 0;
   p->syscall_count = 0;
   p->state = UNUSED;
+  p->ticks = 0;
+  p->tickets =0;
 }
 
 // Create a user page table for a given process, with no user memory,
@@ -330,7 +340,14 @@ fork(void)
 
   acquire(&np->lock);
   np->state = RUNNABLE;
+  #if defined(LOTTERY)
   np->tickets = 10;
+  np->ticks = 0;
+  #endif
+  #if defined(STRIDE)
+  np->tickets = 10;
+  np->
+  #endif
   release(&np->lock);
 
   return pid;
@@ -458,6 +475,7 @@ scheduler(void)
   struct proc *p;
   struct cpu *c = mycpu();
   c->proc = 0;
+  /*
   static _Bool have_seeded = 0;
   const int seed = 1323;
 	if(!have_seeded)
@@ -465,14 +483,24 @@ scheduler(void)
 		srand(seed);
 		have_seeded = 1;
 	}
-
+ */
   for(;;){
     // Avoid deadlock by ensuring that devices can interrupt.
     intr_on();
+    #if defined(LOTTERY)
     int total_tickets = 0;
     int currentTicketCount = 0;
     int lottery = 0;
-    lottery = rand()%total_tickets;;
+    for(p = proc; p < &proc[NPROC]; p++) {
+      //acquire(&p->lock);
+      if(p->state == RUNNABLE) {
+        // get all runable process to get total ticktets
+        // to release its lock and then reacquire it.
+        total_tickets += p->tickets;
+      }
+    }
+    lottery = rand()%total_tickets;
+    total_tickets = 0;
     for(p = proc; p < &proc[NPROC]; p++) {
       acquire(&p->lock);
       if(p->state == RUNNABLE) {
@@ -480,38 +508,24 @@ scheduler(void)
         // to release its lock and then reacquire it.
 	total_tickets += p->tickets;
       if(total_tickets>=lottery){
-	  //printf("the result of lottery is %d",lottery);
+	  printf("the result of lottery pid is %d p tickets is %d\n",p->pid,p->tickets);
 	  p->state = RUNNING;
+	  p->ticks++;
           c->proc = p;
           currentTicketCount++;
           swtch(&c->context, &p->context);
           // Process is done running for now.
           // It should have changed its p->state before coming back.
           c->proc = 0;
+	  release(&p->lock);
+	  break;
         }
       }
       release(&p->lock);
-
-      //release(&p->lock);
     }
-    /*
-    lottery = random_at_most(total_tickets);
-    //printf("the result of lottery is %d",lottery); 
-    for(p = proc; p < &proc[NPROC]; p++) {
-        acquire(&p->lock);
-	if(p->state == RUNNABLE && p->tickets == lottery) {
-          p->state = RUNNING;
-          c->proc = p;
-	  currentTicketCount++;
-          swtch(&c->context, &p->context);
-          // Process is done running for now.
-          // It should have changed its p->state before coming back.
-          c->proc = 0;
-	}
-      release(&p->lock);
-    }
-    */
+    #endif
   }
+  
 }
 
 // Switch to scheduler.  Must hold only p->lock
@@ -778,6 +792,7 @@ int proc_info(uint64 addr){
         	return -1;
 	return 0;
 }
+#if defined(LOTTERY)
 int sched_statistics(void)
 {
   struct proc *p;
@@ -788,7 +803,7 @@ int sched_statistics(void)
     for(p = proc; p < &proc[NPROC]; p++) {
       if(p->state!=UNUSED) {
 	 //acquire(&p->lock);
-         printf("%d(%s): tickets: %d, ticks:%d \n", p->pid, p->name,p->tickets,p->chan);
+         printf("%d(%s): tickets: %d, ticks:%d \n", p->pid, p->name,p->tickets,p->ticks);
 	 //release(&p->lock);
       }
       
@@ -798,19 +813,26 @@ int sched_statistics(void)
         printf("%d(%s): tickets: xxx, ticks: \n", p->pid, p->name);
       }*/
     }
+#endif
 #ifdef DEBUG
     printf("syscall over");
 #endif
   return 0;
 }
+#if defined(LOTTERY)
 int sched_tickets(int tickets)
 {
+  if(tickets < 0|| tickets>10000){
+    printf("invalid tickets");
+    return -1;
+  }
   struct proc *p = myproc();
   acquire(&p->lock);
   p->tickets = tickets;
   release(&p->lock);
-#ifndef DEBUG
+#ifdef DEBUG
   printf("tickets changed to : xxx, ticks: \n", p->pid, p->name);
 #endif
   return 0;
 }	
+#endif

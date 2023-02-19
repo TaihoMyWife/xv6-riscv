@@ -14,13 +14,17 @@ sys_exit(void)
   exit(n);
   return 0;  // not reached
 }
+//print tickets and ticks
+#if defined(LOTTERY)
 uint64
 sys_sched_static(void)
 {
   sched_statistics();
-  printf("function over");
+  //printf("function over");
   return 0;
 }
+#endif
+
 
 uint64
 sys_getpid(void)
@@ -122,3 +126,15 @@ sys_procinfo(void)
   proc_info(p);
   return 0;
 }
+#if defined(LOTTERY)
+uint64
+sys_sched_tickets(void)
+{
+  int n;
+  argint(0, &n); //get syscall arg
+  //sched_statistics();
+  //return 0;
+  return sched_tickets(n);
+  //return ;
+}
+#endif

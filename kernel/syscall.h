@@ -24,3 +24,5 @@
 #define SYS_procinfo   23
 #define SYS_sched_static   24
 #define SYS_sched_tickets   25
+#define SYS_clone  26
+#define SYS_join   27

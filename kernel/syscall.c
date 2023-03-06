@@ -105,6 +105,8 @@ extern uint64 sys_info(void);
 extern uint64 sys_procinfo(void);
 extern uint64 sys_sched_static(void);
 extern uint64 sys_sched_tickets(void);
+extern uint64 sys_clone(void);
+extern uint64 sys_join(void);
 // An array mapping syscall numbers from syscall.h
 // to the function that handles the system call.
 static uint64 (*syscalls[])(void) = {
@@ -133,6 +135,8 @@ static uint64 (*syscalls[])(void) = {
 [SYS_procinfo]    sys_procinfo,
 [SYS_sched_static] sys_sched_static,
 [SYS_sched_tickets] sys_sched_tickets,
+[SYS_clone]   sys_clone,
+[SYS_join]    sys_join,
 };
 
 void
@@ -153,4 +157,21 @@ syscall(void)
             p->pid, p->name, num);
     p->trapframe->a0 = -1;
   }
+}
+int
+sys_clone(void)
+{
+  int fcn, arg1, arg2, stack;
+  if(argint(0, &fcn)<0 || argint(1, &arg1)<0 || argint(2, &arg2)<0 || argint(3, &stack)<0)
+    return -1;
+  return clone((void*)fcn, (void*)arg1, (void*)arg2, (void*)stack);
+}
+
+int
+sys_join(void)
+{
+  int stack;
+  if(argint(0, &stack)<0)
+    return -1;
+  return join((void**)stack);
 }

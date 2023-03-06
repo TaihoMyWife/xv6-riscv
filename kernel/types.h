@@ -8,3 +8,7 @@ typedef unsigned int  uint32;
 typedef unsigned long uint64;
 
 typedef uint64 pde_t;
+typedef struct __lock_t {
+    int next_ticket;
+    int now_serving;
+} lock_t;

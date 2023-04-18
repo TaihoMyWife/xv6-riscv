@@ -1,49 +1,290 @@
-xv6 is a re-implementation of Dennis Ritchie's and Ken Thompson's Unix
-Version 6 (v6).  xv6 loosely follows the structure and style of v6,
-but is implemented for a modern RISC-V multiprocessor using ANSI C.
+# CS218HW1
 
-ACKNOWLEDGMENTS
+## Prob1
 
-xv6 is inspired by John Lions's Commentary on UNIX 6th Edition (Peer
-to Peer Communications; ISBN: 1-57398-013-7; 1st edition (June 14,
-2000)).  See also https://pdos.csail.mit.edu/6.1810/, which provides
-pointers to on-line resources for v6.
+### 1, Ans: $\Theta$
 
-The following people have made contributions: Russ Cox (context switching,
-locking), Cliff Frey (MP), Xiao Yu (MP), Nickolai Zeldovich, and Austin
-Clements.
+### Proof:
 
-We are also grateful for the bug reports and patches contributed by
-Takahiro Aoyagi, Silas Boyd-Wickizer, Anton Burtsev, carlclone, Ian
-Chen, Dan Cross, Cody Cutler, Mike CAT, Tej Chajed, Asami Doi,
-eyalz800, Nelson Elhage, Saar Ettinger, Alice Ferrazzi, Nathaniel
-Filardo, flespark, Peter Froehlich, Yakir Goaron, Shivam Handa, Matt
-Harvey, Bryan Henry, jaichenhengjie, Jim Huang, Matúš Jókay, John
-Jolly, Alexander Kapshuk, Anders Kaseorg, kehao95, Wolfgang Keller,
-Jungwoo Kim, Jonathan Kimmitt, Eddie Kohler, Vadim Kolontsov, Austin
-Liew, l0stman, Pavan Maddamsetti, Imbar Marinescu, Yandong Mao, Matan
-Shabtay, Hitoshi Mitake, Carmi Merimovich, Mark Morrissey, mtasm, Joel
-Nider, Hayato Ohhashi, OptimisticSide, Harry Porter, Greg Price, Jude
-Rich, segfault, Ayan Shafqat, Eldar Sehayek, Yongming Shen, Fumiya
-Shigemitsu, Cam Tenny, tyfkda, Warren Toomey, Stephen Tu, Rafael Ubal,
-Amane Uehara, Pablo Ventura, Xi Wang, WaheedHafez, Keiichi Watanabe,
-Nicolas Wolovick, wxdao, Grant Wu, Jindong Zhang, Icenowy Zheng,
-ZhUyU1997, and Zou Chang Wei.
+We can prove that sqrt{3}^{logn} is \theta(n) as follows:
+
+$$
+Let\ f(n) = \sqrt{3}^{logn}\\
+Then,log f(n) = log(\sqrt{3}^{logn})\\
+= (log(3)/2) * logn\\
+log f(n) = \Theta(logn)
+$$
+
+Thus $f(n)=\Theta (n)$   
+
+### 2, Ans: $o$
+
+### Proof:
+
+We let logn=t. then we have
+
+$logt=o(\sqrt{t})$
+
+ I.e. $loglogn=o(\sqrt{logn})$
+
+### 3, Ans: $\Theta$
+
+### Proof:
+
+According to e’s definition on [wiki](https://en.wikipedia.org/wiki/E_(mathematical_constant)) ([https://en.wikipedia.org/wiki/E_(mathematical_constant)](https://en.wikipedia.org/wiki/E_(mathematical_constant))), we have :
+
+$lim_{n\to +\infin} n!=\frac{n^n}{e^n}$, 
+
+Then we apply log on both side,  we have:
+
+$log(n!)=nlog(n/e)=\Theta(nlogn)$
+
+### 4, Ans: $o$
+
+### Proof:
+
+let   $lim_{n\to+\infin}$, then we have  $3^n/2^n=(1.5)^n>>1$
+
+So we can tell 
+
+$$
+2^n=o(3^n)
+$$
+
+## Prob2
+
+### (1)
+
+$$
+T(n) = T(n/2) + n log n
+$$
+
+Using the master theorem, we have:
+
+- $a = 1$ , $b = 2$, and  $f(n) = n log n$
+- $n^{log_b a} = n^0 = 1$
+- $f(n) = \Theta(n log n)$
+
+Therefore, by the third case of the master theorem,  and there exists a c<1 such that $nlog(n/2)/2\le cnlogn$ , we have:
+
+$T(n) = \Theta(n log n)$ 
+
+### (2)
+
+$$
+T(n) = 2T(n/4) + \sqrt{n}
+$$
+
+Using the master theorem, we have:
+
+- $a = 2, b = 4, and\ f(n) = \sqrt{n}$
+- $n^{log_b a} = n^{1/2}$
+- $f(n) = \Theta(\sqrt{n})$
+
+Therefore, by the second case of the master theorem, $T(n) = \Theta(\sqrt{n} log n)$ 
+
+### (3)
+
+$$
+T(n) = 4T(n/4) + n^{1/2}
+$$
+
+Using the master theorem, we have:
+
+- $a = 4$, $b = 4$, and $f(n) = n^{1/2}$
+- $n^{log_b a} = n$
+- $f(n) = \Theta(n^{1/2})$
+
+Therefore, by the first case of the master theorem, $T(n) = \Theta(n)$   
+
+## Prob3
+
+(1)
+
+We can directly use a binary search method to find the bad candy.
+
+we divide candies into left and right part equally, then the lighter part has the bad candy, then we continually
+
+run binary search on that lighter part till we find the bad candy from last 2 candies. We don’t need to search on the greater part on scale(with bigger weight but we don’t know its weight exactly)  anymore.
+
+Then cost is same as binary search, which is $(log_2n)$
+
+### (2)
+
+We can still use the idea of binary search. Each time, we separate our input into 3 subarray equally, R1,R2,R3.
+
+Then we can test if R1 is lighter than R2, if R1 is lighter, then bad candy is in R1, or if R2 is lighter, then bad candy is in R2.
+
+If they are equal, i.e. they are balance on scale, (w(R1)=w(R2) ), them R3 must be the lighter one, so bad candy is in R3.
+
+Then we continually run such search on the lighter part until we find the bad candy from last 3 candies.
+
+The cost is $log_3n$ since we only need 1 dollar to shrink  search range from n to n/3. 
+
+### (3)
+
+**We only to do little modification on (2)’s answer.**
+
+We can still use the idea of binary search. Each time, we separate our input into 3 subarray equally, R1,R2,R3.
+
+**Then we test the relationship among R1,R2,R3.** 
+
+- If there are 2 parts are equal, and the third part is smaller than them, like R1=R2>R3,
+    
+    then we can tell that there are bad candies\candy in R3, so we can search R3 continually. R1 and R2 are no needs to search on them.
+    
+- If there 2 parts are equal, and the third part is bigger than them, like R1=R2<R3,
+    
+    then we can tell that there are bad candies in R1 and R2, so we can search R1 and R2  continually. R3  is no need to search on it.
+    
+
+To decide the relationship, we can do at most 3 testing , i.e. at most 3 dollars to tell where are the bad candies.
+
+The cost is $O(logn)$ since we only need 3 dollars to shrink  search range from n to n/3 for single bad candy, and we only have 2 bad candies. 
+
+### (4)
+
+**Since k is a constant, we only to do little modification on (3)’s answer.**
+
+We can still use the idea of divide and conquer. Each time, we separate our input into k+1 subarray equally, R1,R2,R3… $R_{k+1}$
+
+**Then we test the relationship among R1,R2,R3…** $Rk+1$**.** 
+
+- Since there are at most k candies, so there must have one part with max weight(all other parts eighter lighter or equal to it) and no bad candies. Let’s call it Rm, so then all other parts that are balanced with Rm on scale(with same weight)  have no bad candies, we don’t need to search it anymore. If a part is lighter than Rm, then it has bad candies, we need to run search on it.
+
+To decide the relationship, we can do at most k+k-1…+1 testing , i.e. at most $(k+1)^2$ dollars to tell where are the bad candies.
+
+The cost is $O(log_kn*(k+1)^2*k)=O(logn)$,  since we need $(k+1)^2$ dollars to shrink  search range from n to n/k for single bad candy, and we only have k bad candies. 
+
+## Prob4
+
+### (1)
+
+I’ve submitted my code on Codeforce, my Codeforce id is Zhixu_Li 
+
+And I will submit the report on gradescope as well.
+
+### (2)-1
+
+Now we first make it clear that what is bubble sort:  
+
+*Bubble sort is a simple comparison-based sorting algorithm. It repeatedly steps through the list to be sorted, compares adjacent items, and swaps them if they are in the wrong order.*
+
+Then we could examine the problem, and hereby I introduce the idea of `inversion`.
+
+An `inversion i`s a pair of elements (A[i], A[j]) such that i < j and A[i] > A[j], which is the target of bubble sort’s swap. 
+
+The total number of inversions in an array is a measure of its "unsortedness." Bubble sort performs a swap only if there is an inversion in the array. Therefore, each swap performed by bubble sort reduces the total number of inversions by 1. 
+
+Since we cannot reduce the number of inversions by more than 1 in a single swap, bubble sort achieves the optimal number of swaps when considering adjacent swaps only.
+
+### (2)-2
+
+Recap: According to (2)-1, bubble sort’s swap times is optimal and each swap in bubble sort reduce inversions by 1.
+
+My algorithm uses divide-and-conquer method, and essentially, it is a variant of mergesort. And it’s  already `accepted` by codeforce.
+
+In mergesort, we run mergesort on 2 subarrays and then merge them to get a ordered array.
+
+This algorithm modifies the original merge(  ) into
+
+```jsx
+merge(nums, start, mid, end) {
+    int i = start, j = mid + 1;
+		swaps = 0;//number of swaps in merge()
+    vector<int> temp;
+
+    while (i <= mid && j <= end) {
+        if (nums[i] <= nums[j]) {//no inversions
+            temp.push_back(nums[i++]);
+        } else {//exists an inversion
+            temp.push_back(nums[j++]);
+            swaps += (mid - i + 1);
+        }
+    }
+
+    while (i <= mid) {// when all of subarray1 are put into temp array, 
+											//put rest of the subarray2 into temp array
+        temp.push_back(nums[i++]);
+    }
+    while (j <= end) {
+        temp.push_back(nums[j++]);
+    }
+		
+		
+    return swaps;
+}
+```
+
+In short, since both of the subarrays(A,B) are sorted array, then to merge them into single sorted array, we need to maintain 1 pointer for each subarray and compare the values that pointers point to. 
+
+In mergesort, to get an increasing order array with pointer i,j , if A[i]<B[j], we put it into temp array directly and i++, and our algorithm do the same thing. It means that the elements are in the correct order, so there's no need to swap them
+
+But if A[i]>B[i] , mergesort will put B[j] into temp and j++. That means that there is an inversion, and elements need to be swapped to get a sorted array. So o**ur algorithm does the same thing plus adding number of  inversions by `mid-i-1` since there are `mid-i-1` inversions about B[j], between A[i] and B[j].**
+
+And since each the algorithm count the number of inversions, the output is the optimal number of swaps.
+
+The time complexity is same with merge sort, which is $O(nlogn)$.
+
+### (2)-3
+
+Just like I said in (2)-2, the key part of algorithm is to count the number of inversions. 
+
+Each swap in bubble sort reduce an inversion till the array is sorted and no inversions. Thus we can tell the number of inversions in an array is the number of optimal swap times.
+
+Thus our algorithm output is the number of inversions, i.e. the number optimal\fewest adjacent swaps. 
+
+## Prob5
+
+For this problem, to be a `unique-in-range`  array, it should have a unique number in range of whole array.
+
+Like  3 in [1,2,3,2,1], then we can find that for any subarray that contains 3, these subarray will have a unique number 3. Like [1,2,3,1] , so for the range [1,4]( i=1, j=4),  it does not break the unique-in-range property for such range.
+
+ **So  if a array does have a overall unique number, then to judge if it is a unique-in-range, we need to inspect its subarray(i.e. range) which do not have the overall unique number, since the subarray\range that contains the unique number will not break the property.**
+
+Till now, it’s naturally  to give out a divide-and-conquer algorithm that uses the `unique number` in certain range as a pivot to partition the range into 2 smaller range.
+
+Like in [1,2,3,2,1], 3 is the unique number for range[1,5], so we need to use it to partition [1,5] into 2 parts that do not contain 3. That is [1,2] and [2,1], then both 1and 2 are unique in each subrange(i.e. both [1,2]and [2,1] are unique-in-range arrays), so we can tell [1,2,3,2,1] has the `unique-in-range` property.
+
+Here is the pseudocode for the algorithm described in Prob 5:
+
+```
+uniqueInRange(array, left, right):
+    if left == right:
+        return True
+    pivot = findUniqueInRange(array, left, right)
+    if pivot == -1:
+        return False
+    return uniqueInRange(array, left, pivot - 1) and uniqueInRange(array, pivot + 1, right)
+
+findUniqueInRange(array, left, right):// Find a unique number in array[left,right]
+    // Initialize a dictionary to count occurrences
+    counter = {}
+
+    // Iterate through the specified range and update the counter
+    for i = left to right:
+        if array[i] in counter:
+            counter[array[i]] += 1
+        else:
+            counter[array[i]] = 1
+
+    // Find the first unique number
+    unique = None
+    for number, count in counter.items():
+        if count == 1:
+            unique = number
+            break
+
+    // Return the index of the unique number (or None if not found)
+    If unique is not None: return array.index(unique)
+		else: return -1
+
+```
+
+The time of finding the unique element is O(n),  if the unique element appear randomly, then the time is same as quicksort, so it’s $O(quicksort)=O(nlogn)$ whp. 
+
+ 
+
+[CS218Coding Entrance Exam Report](https://www.notion.so/CS218Coding-Entrance-Exam-Report-02f73587b2414fffa8bfbd8d44d848bc)
 
 
-The code in the files that constitute xv6 is
-Copyright 2006-2022 Frans Kaashoek, Robert Morris, and Russ Cox.
-
-ERROR REPORTS
-
-Please send errors and suggestions to Frans Kaashoek and Robert Morris
-(kaashoek,rtm@mit.edu).  The main purpose of xv6 is as a teaching
-operating system for MIT's 6.1810, so we are more interested in
-simplifications and clarifications than new features.
-
-BUILDING AND RUNNING XV6
-
-You will need a RISC-V "newlib" tool chain from
-https://github.com/riscv/riscv-gnu-toolchain, and qemu compiled for
-riscv64-softmmu.  Once they are installed, and in your shell
-search path, you can run "make qemu".
